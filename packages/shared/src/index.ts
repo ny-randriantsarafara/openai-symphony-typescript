@@ -1,2 +1,2 @@
 // Shared types and API contracts for Symphony
-export {};
+export * from "./domain.js";

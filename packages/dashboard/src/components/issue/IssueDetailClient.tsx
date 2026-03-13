@@ -121,3 +121,5 @@ export function IssueDetailClient() {
     </Container>
   );
 }
+
+export default IssueDetailClient;

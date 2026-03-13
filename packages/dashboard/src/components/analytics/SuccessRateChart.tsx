@@ -6,7 +6,7 @@ import { DonutChart } from '@mantine/charts';
 const PLACEHOLDER_DATA = [
   { name: 'Success', value: 847, color: 'green.6' },
   { name: 'Failure', value: 42, color: 'red.6' },
-  { name: 'Timeout', value: 11, color: 'yellow.6' },
+  { name: 'Timeout', value: 11, color: 'orange.6' },
 ];
 
 const TOTAL = PLACEHOLDER_DATA.reduce((sum, d) => sum + d.value, 0);

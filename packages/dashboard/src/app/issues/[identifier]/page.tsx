@@ -1,8 +1,4 @@
-import { IssueDetailClient } from './IssueDetailClient';
-
-export function generateStaticParams() {
-  return [];
-}
+import { IssueDetailClient } from '../../../components/issue/IssueDetailClient';
 
 export default function IssueDetailPage() {
   return <IssueDetailClient />;

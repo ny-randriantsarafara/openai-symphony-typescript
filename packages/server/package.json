@@ -1,0 +1,29 @@
+{
+  "name": "@symphony/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/cli.js",
+  "bin": {
+    "symphony": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@symphony/core": "workspace:*",
+    "@symphony/shared": "workspace:*",
+    "commander": "^13",
+    "fastify": "^5",
+    "@fastify/websocket": "^11",
+    "@fastify/static": "^8"
+  },
+  "devDependencies": {
+    "typescript": "^5.7",
+    "vitest": "^3"
+  }
+}

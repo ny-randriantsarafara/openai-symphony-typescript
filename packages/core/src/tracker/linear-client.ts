@@ -69,12 +69,12 @@ function isLinearIssueNode(value: unknown): value is LinearIssueNode {
   if (value === null || typeof value !== "object") return false;
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.id === "string" &&
-    typeof obj.identifier === "string" &&
-    typeof obj.title === "string" &&
-    obj.state !== null &&
-    typeof obj.state === "object" &&
-    typeof (obj.state as Record<string, unknown>).name === "string"
+    typeof obj["id"] === "string" &&
+    typeof obj["identifier"] === "string" &&
+    typeof obj["title"] === "string" &&
+    obj["state"] !== null &&
+    typeof obj["state"] === "object" &&
+    typeof (obj["state"] as Record<string, unknown>)["name"] === "string"
   );
 }
 
@@ -107,14 +107,14 @@ function normalizeBlockers(inverseRelations: unknown): readonly BlockerRef[] {
     const issue = (n as { issue: unknown }).issue;
     if (typeof issue !== "object" || issue === null) continue;
     const i = issue as Record<string, unknown>;
-    const state = i.state;
+    const state = i["state"];
     const stateName =
       state !== null && typeof state === "object" && "name" in state
         ? String((state as { name: unknown }).name)
         : null;
     result.push({
-      id: typeof i.id === "string" ? i.id : null,
-      identifier: typeof i.identifier === "string" ? i.identifier : null,
+      id: typeof i["id"] === "string" ? i["id"] : null,
+      identifier: typeof i["identifier"] === "string" ? i["identifier"] : null,
       state: stateName,
     });
   }
@@ -131,9 +131,9 @@ function normalizeIssue(node: LinearIssueNode): Issue {
       : "Unknown";
 
   return {
-    id: node.id,
-    identifier: node.identifier,
-    title: node.title,
+    id: node["id"],
+    identifier: node["identifier"],
+    title: node["title"],
     description: node.description ?? null,
     priority,
     state: stateName,
@@ -149,8 +149,8 @@ function normalizeIssue(node: LinearIssueNode): Issue {
 function parseIssuesConnection(value: unknown): IssuesConnection | null {
   if (value === null || typeof value !== "object") return null;
   const obj = value as Record<string, unknown>;
-  const pageInfo = obj.pageInfo;
-  const nodes = obj.nodes;
+  const pageInfo = obj["pageInfo"];
+  const nodes = obj["nodes"];
 
   if (!pageInfo || typeof pageInfo !== "object") return null;
   const hasNextPage =
@@ -295,7 +295,7 @@ export class LinearClient {
         first: DEFAULT_PAGE_SIZE,
       };
       if (after !== null) {
-        variables.after = after;
+        variables["after"] = after;
       }
 
       const result = await this.request<{ issues: IssuesConnection }>(

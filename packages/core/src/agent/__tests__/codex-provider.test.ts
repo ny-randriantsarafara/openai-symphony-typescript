@@ -5,17 +5,17 @@ import type { ChildProcess } from "node:child_process";
 import { createCodexProvider } from "../providers/codex.js";
 import type { ServiceConfig } from "@symphony/shared";
 
-let mockExecFileProcess: ReturnType<typeof createMockSubprocess>["process"] | null =
+let mockSpawnProcess: ReturnType<typeof createMockSubprocess>["process"] | null =
   null;
 
 vi.mock("node:child_process", () => ({
-  execFile: () => {
-    if (!mockExecFileProcess) {
+  spawn: () => {
+    if (!mockSpawnProcess) {
       throw new Error(
-        "mockExecFileProcess not set - assign createMockSubprocess(...).process in test"
+        "mockSpawnProcess not set - assign createMockSubprocess(...).process in test"
       );
     }
-    return mockExecFileProcess;
+    return mockSpawnProcess;
   },
 }));
 
@@ -131,11 +131,11 @@ function createMinimalIssue() {
 
 describe("CodexProvider", () => {
   beforeEach(() => {
-    mockExecFileProcess = null;
+    mockSpawnProcess = null;
   });
 
   afterEach(() => {
-    mockExecFileProcess = null;
+    mockSpawnProcess = null;
   });
 
   it("mock streams work: writing to stdin triggers response on stdout", async () => {
@@ -146,7 +146,7 @@ describe("CodexProvider", () => {
         writeToStdout(JSON.stringify({ id: 1, result: {} }));
       }
     });
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const rl = createInterface({ input: process.stdout as NodeJS.ReadableStream });
     const linePromise = new Promise<string>((resolve) => {
@@ -185,7 +185,7 @@ describe("CodexProvider", () => {
       }
     );
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({
@@ -229,7 +229,7 @@ describe("CodexProvider", () => {
       }
     });
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({
@@ -266,7 +266,7 @@ describe("CodexProvider", () => {
       }
     });
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({
@@ -318,7 +318,7 @@ describe("CodexProvider", () => {
       }
     });
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({
@@ -386,7 +386,7 @@ describe("CodexProvider", () => {
       }
     });
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({
@@ -445,7 +445,7 @@ describe("CodexProvider", () => {
       }
     });
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({
@@ -516,7 +516,7 @@ describe("CodexProvider", () => {
       }
     );
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({
@@ -594,7 +594,7 @@ describe("CodexProvider", () => {
       }
     });
 
-    mockExecFileProcess = process;
+    mockSpawnProcess = process;
 
     const provider = createCodexProvider();
     const session = await provider.startSession({

@@ -65,15 +65,15 @@ function normalizeMaxConcurrentAgentsByState(
 }
 
 export function resolveConfig(rawConfig: Record<string, unknown>): ServiceConfig {
-  const trackerRaw = safeRecord(rawConfig.tracker);
-  const pollingRaw = safeRecord(rawConfig.polling);
-  const workspaceRaw = safeRecord(rawConfig.workspace);
-  const hooksRaw = safeRecord(rawConfig.hooks);
-  const agentRaw = safeRecord(rawConfig.agent);
-  const codexRaw = safeRecord(rawConfig.codex);
+  const trackerRaw = safeRecord(rawConfig["tracker"]);
+  const pollingRaw = safeRecord(rawConfig["polling"]);
+  const workspaceRaw = safeRecord(rawConfig["workspace"]);
+  const hooksRaw = safeRecord(rawConfig["hooks"]);
+  const agentRaw = safeRecord(rawConfig["agent"]);
+  const codexRaw = safeRecord(rawConfig["codex"]);
 
-  const kind = toString(trackerRaw.kind) || "linear";
-  const apiKeyRaw = toString(trackerRaw.api_key);
+  const kind = toString(trackerRaw["kind"]) || "linear";
+  const apiKeyRaw = toString(trackerRaw["api_key"]);
   const apiKeyResolved =
     apiKeyRaw || (kind === "linear" ? resolveEnvVar("$LINEAR_API_KEY") : "");
   const apiKey = apiKeyRaw.startsWith("$")
@@ -83,15 +83,15 @@ export function resolveConfig(rawConfig: Record<string, unknown>): ServiceConfig
   const tracker = {
     kind,
     endpoint:
-      toString(trackerRaw.endpoint) ||
+      toString(trackerRaw["endpoint"]) ||
       (kind === "linear" ? "https://api.linear.app/graphql" : ""),
     apiKey,
-    projectSlug: toString(trackerRaw.project_slug),
-    activeStates: toStringArray(trackerRaw.active_states).length
-      ? toStringArray(trackerRaw.active_states)
+    projectSlug: toString(trackerRaw["project_slug"]),
+    activeStates: toStringArray(trackerRaw["active_states"]).length
+      ? toStringArray(trackerRaw["active_states"])
       : ["Todo", "In Progress"],
-    terminalStates: toStringArray(trackerRaw.terminal_states).length
-      ? toStringArray(trackerRaw.terminal_states)
+    terminalStates: toStringArray(trackerRaw["terminal_states"]).length
+      ? toStringArray(trackerRaw["terminal_states"])
       : [
           "Closed",
           "Cancelled",
@@ -101,7 +101,7 @@ export function resolveConfig(rawConfig: Record<string, unknown>): ServiceConfig
         ],
   };
 
-  const workspaceRootRaw = toString(workspaceRaw.root);
+  const workspaceRootRaw = toString(workspaceRaw["root"]);
   const workspaceRoot = workspaceRootRaw
     ? expandPath(workspaceRootRaw)
     : `${tmpdir()}/symphony_workspaces`;
@@ -109,39 +109,39 @@ export function resolveConfig(rawConfig: Record<string, unknown>): ServiceConfig
   return {
     tracker,
     polling: {
-      intervalMs: toInteger(pollingRaw.interval_ms, 30000),
+      intervalMs: toInteger(pollingRaw["interval_ms"], 30000),
     },
     workspace: {
       root: workspaceRoot,
     },
     hooks: {
-      afterCreate: toStringOrNull(hooksRaw.after_create),
-      beforeRun: toStringOrNull(hooksRaw.before_run),
-      afterRun: toStringOrNull(hooksRaw.after_run),
-      beforeRemove: toStringOrNull(hooksRaw.before_remove),
-      timeoutMs: toInteger(hooksRaw.timeout_ms, 60000),
+      afterCreate: toStringOrNull(hooksRaw["after_create"]),
+      beforeRun: toStringOrNull(hooksRaw["before_run"]),
+      afterRun: toStringOrNull(hooksRaw["after_run"]),
+      beforeRemove: toStringOrNull(hooksRaw["before_remove"]),
+      timeoutMs: toInteger(hooksRaw["timeout_ms"], 60000),
     },
     agent: {
-      provider: toString(agentRaw.provider) || "codex",
-      command: toString(agentRaw.command) || "codex app-server",
-      maxConcurrentAgents: toInteger(agentRaw.max_concurrent_agents, 10),
-      maxTurns: toInteger(agentRaw.max_turns, 20),
-      maxRetryBackoffMs: toInteger(agentRaw.max_retry_backoff_ms, 300000),
+      provider: toString(agentRaw["provider"]) || "codex",
+      command: toString(agentRaw["command"]) || "codex app-server",
+      maxConcurrentAgents: toInteger(agentRaw["max_concurrent_agents"], 10),
+      maxTurns: toInteger(agentRaw["max_turns"], 20),
+      maxRetryBackoffMs: toInteger(agentRaw["max_retry_backoff_ms"], 300000),
       maxConcurrentAgentsByState: Object.keys(
-        safeRecord(agentRaw.max_concurrent_agents_by_state)
+        safeRecord(agentRaw["max_concurrent_agents_by_state"])
       ).length
         ? normalizeMaxConcurrentAgentsByState(
-            agentRaw.max_concurrent_agents_by_state
+            agentRaw["max_concurrent_agents_by_state"]
           )
         : {},
     },
     codex: {
-      approvalPolicy: toString(codexRaw.approval_policy) || "auto-edit",
-      threadSandbox: toString(codexRaw.thread_sandbox) || "none",
-      turnSandboxPolicy: toString(codexRaw.turn_sandbox_policy) || "none",
-      turnTimeoutMs: toInteger(codexRaw.turn_timeout_ms, 3600000),
-      readTimeoutMs: toInteger(codexRaw.read_timeout_ms, 5000),
-      stallTimeoutMs: toInteger(codexRaw.stall_timeout_ms, 300000),
+      approvalPolicy: toString(codexRaw["approval_policy"]) || "auto-edit",
+      threadSandbox: toString(codexRaw["thread_sandbox"]) || "none",
+      turnSandboxPolicy: toString(codexRaw["turn_sandbox_policy"]) || "none",
+      turnTimeoutMs: toInteger(codexRaw["turn_timeout_ms"], 3600000),
+      readTimeoutMs: toInteger(codexRaw["read_timeout_ms"], 5000),
+      stallTimeoutMs: toInteger(codexRaw["stall_timeout_ms"], 300000),
     },
   };
 }

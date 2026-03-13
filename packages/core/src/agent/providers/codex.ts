@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import type { Readable } from "node:stream";
 import type {
@@ -10,6 +10,7 @@ import type {
 import type { AgentEvent, ServiceConfig } from "@symphony/shared";
 
 interface JsonRpcRequest {
+  jsonrpc?: string;
   id?: number;
   method?: string;
   params?: unknown;
@@ -36,18 +37,18 @@ function parseJsonRpc(line: string): unknown {
 function extractThreadId(response: JsonRpcResponse): string | null {
   const result = response.result;
   if (result === null || typeof result !== "object") return null;
-  const thread = (result as Record<string, unknown>).thread;
+  const thread = (result as Record<string, unknown>)["thread"];
   if (thread === null || typeof thread !== "object") return null;
-  const id = (thread as Record<string, unknown>).id;
+  const id = (thread as Record<string, unknown>)["id"];
   return typeof id === "string" ? id : null;
 }
 
 function extractTurnId(response: JsonRpcResponse): string | null {
   const result = response.result;
   if (result === null || typeof result !== "object") return null;
-  const turn = (result as Record<string, unknown>).turn;
+  const turn = (result as Record<string, unknown>)["turn"];
   if (turn === null || typeof turn !== "object") return null;
-  const id = (turn as Record<string, unknown>).id;
+  const id = (turn as Record<string, unknown>)["id"];
   return typeof id === "string" ? id : null;
 }
 
@@ -61,7 +62,7 @@ function writeStdin(
   return new Promise((resolve, reject) => {
     const ok = (stream as NodeJS.WritableStream).write(
       data + "\n",
-      (err?: Error) => (err ? reject(err) : resolve())
+      (err?: Error | null) => (err ? reject(err) : resolve())
     );
     if (ok) resolve();
   });
@@ -147,14 +148,10 @@ export function createCodexProvider(): AgentProvider {
       const readTimeoutMs = config.codex.readTimeoutMs;
       const turnTimeoutMs = config.codex.turnTimeoutMs;
 
-      const child = execFile(
-        "bash",
-        ["-lc", command],
-        {
-          cwd: workspacePath,
-          stdio: ["pipe", "pipe", "pipe"],
-        }
-      );
+      const child = spawn("bash", ["-lc", command], {
+        cwd: workspacePath,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
 
       const stdout = child.stdout;
       if (!stdout || !("on" in stdout)) {
@@ -273,9 +270,9 @@ export function createCodexProvider(): AgentProvider {
 
               if (method === "turn/completed") {
                 const p = params as Record<string, unknown> | undefined;
-                const inputTokens = typeof p?.inputTokens === "number" ? p.inputTokens : 0;
-                const outputTokens = typeof p?.outputTokens === "number" ? p.outputTokens : 0;
-                const totalTokens = typeof p?.totalTokens === "number" ? p.totalTokens : 0;
+                const inputTokens = typeof p?.["inputTokens"] === "number" ? p["inputTokens"] : 0;
+                const outputTokens = typeof p?.["outputTokens"] === "number" ? p["outputTokens"] : 0;
+                const totalTokens = typeof p?.["totalTokens"] === "number" ? p["totalTokens"] : 0;
                 yield {
                   type: "turn_completed",
                   inputTokens,
@@ -289,7 +286,7 @@ export function createCodexProvider(): AgentProvider {
                 const p = params as Record<string, unknown> | undefined;
                 yield {
                   type: "turn_failed",
-                  error: String(p?.error ?? "Turn failed"),
+                  error: String(p?.["error"] ?? "Turn failed"),
                 };
                 return;
               }

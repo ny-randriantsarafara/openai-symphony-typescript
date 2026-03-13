@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { ColorSchemeScript } from '../theme/MantineProvider';
 import { MantineProvider } from '../theme/MantineProvider';
 import { AppShell } from '../components/layout/AppShell';
+import { QueryProvider } from '../hooks/QueryProvider';
 
 export const metadata: Metadata = {
   title: 'Symphony Dashboard',
@@ -17,9 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider>
-          <AppShell>{children}</AppShell>
-        </MantineProvider>
+        <QueryProvider>
+          <MantineProvider>
+            <AppShell>{children}</AppShell>
+          </MantineProvider>
+        </QueryProvider>
       </body>
     </html>
   );

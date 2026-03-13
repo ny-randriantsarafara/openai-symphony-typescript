@@ -19,20 +19,13 @@ export interface OrchestratorState {
   readonly rateLimits: unknown | null;
 }
 
-const ZERO_TOKEN_TOTALS: TokenTotals = {
-  inputTokens: 0,
-  outputTokens: 0,
-  totalTokens: 0,
-  secondsRunning: 0,
-};
-
 export function createInitialState(): OrchestratorState {
   return {
     running: new Map(),
     claimed: new Set(),
     retryAttempts: new Map(),
     completed: new Set(),
-    codexTotals: ZERO_TOKEN_TOTALS,
+    codexTotals: { inputTokens: 0, outputTokens: 0, totalTokens: 0, secondsRunning: 0 },
     rateLimits: null,
   };
 }

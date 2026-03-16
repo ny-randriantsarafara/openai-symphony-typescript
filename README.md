@@ -2,6 +2,8 @@
 
 A long-running orchestration service that polls an issue tracker (Linear), creates isolated workspaces per issue, and runs coding agent sessions. Built with TypeScript + Node.js, featuring a real-time Mantine dashboard.
 
+For the fastest local setup path, see `RUNNING.md`.
+
 ## What Symphony Does
 
 **Symphony is an autonomous coding agent orchestrator.** It automates the workflow of:
@@ -64,7 +66,7 @@ pnpm build
    export LINEAR_API_KEY=your_key_here
    ```
 
-2. Create/edit `WORKFLOW.md` in your working directory (see example in repo root)
+2. Copy `WORKFLOW.example.md` to `WORKFLOW.md` in the repo root and edit it for your project
 
 ### Run Commands
 
@@ -72,8 +74,8 @@ pnpm build
 |---------|---------|
 | **Dev mode (all packages)** | `pnpm dev` |
 | **Start orchestrator** | `pnpm --filter @symphony/server start` |
-| **Start with custom workflow** | `pnpm --filter @symphony/server start -- ./WORKFLOW.md` |
-| **Start with HTTP server** | `pnpm --filter @symphony/server start -- --port 8080` |
+| **Start with custom workflow** | `pnpm --filter @symphony/server start ./WORKFLOW.md` |
+| **Start with HTTP server** | `pnpm --filter @symphony/server start ./WORKFLOW.md --port 8080` |
 | **Dashboard only** | `pnpm --filter @symphony/dashboard dev` |
 | **Run tests** | `pnpm test` |
 | **Type check** | `pnpm typecheck` |

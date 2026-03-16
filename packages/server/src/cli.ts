@@ -4,10 +4,24 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
+import { startRuntime } from "./runtime/start-runtime.js";
 
 export interface CliArgs {
   readonly workflowPath: string;
   readonly port: number | undefined;
+}
+
+interface RuntimeHandle {
+  stop(): Promise<void>;
+}
+
+interface RunCliDependencies {
+  readonly fileExists?: (path: string) => boolean;
+  readonly startRuntime?: (args: CliArgs) => Promise<RuntimeHandle>;
+  readonly onSignal?: (signal: NodeJS.Signals, handler: () => void) => void;
+  readonly log?: (message: string) => void;
+  readonly error?: (message: string) => void;
+  readonly exit?: (code: number) => void;
 }
 
 export function parseArgs(argv: readonly string[]): CliArgs {
@@ -20,33 +34,69 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     .option("-p, --port <port>", "HTTP server port")
     .parse([...argv]);
 
-  const workflowPath = resolve(program.args[0] ?? "./WORKFLOW.md");
+  const baseDir = process.env["INIT_CWD"] || process.cwd();
+  const workflowPath = resolve(baseDir, program.args[0] ?? "./WORKFLOW.md");
   const opts = program.opts<{ port?: string }>();
   const port = opts.port !== undefined ? parseInt(opts.port, 10) : undefined;
 
   return { workflowPath, port };
 }
 
-async function main(): Promise<void> {
-  const args = parseArgs(process.argv);
+export async function runCli(
+  argv: readonly string[],
+  deps: RunCliDependencies = {}
+): Promise<RuntimeHandle> {
+  const {
+    fileExists = existsSync,
+    startRuntime: start = startRuntime,
+    onSignal = (signal, handler) => {
+      process.on(signal, handler);
+    },
+    log = console.log,
+    error = console.error,
+    exit = (code) => {
+      process.exit(code);
+    },
+  } = deps;
 
-  if (!existsSync(args.workflowPath)) {
-    console.error(`Error: Workflow file not found: ${args.workflowPath}`);
-    process.exit(1);
+  const args = parseArgs(argv);
+
+  if (!fileExists(args.workflowPath)) {
+    throw new Error(`Workflow file not found: ${args.workflowPath}`);
   }
 
-  console.log(`Symphony starting with workflow: ${args.workflowPath}`);
+  log(`Symphony starting with workflow: ${args.workflowPath}`);
+  const runtime = await start(args);
 
-  // TODO: Initialize orchestrator, start HTTP server, handle shutdown
-  // For now, just validate and log
-
-  const shutdown = () => {
-    console.log("Symphony shutting down...");
-    process.exit(0);
+  let shuttingDown = false;
+  const shutdown = async () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    log("Symphony shutting down...");
+    try {
+      await runtime.stop();
+      exit(0);
+    } catch (runtimeError: unknown) {
+      const message = runtimeError instanceof Error ? runtimeError.message : String(runtimeError);
+      error(`Shutdown error: ${message}`);
+      exit(1);
+    }
   };
 
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+  onSignal("SIGINT", shutdown);
+  onSignal("SIGTERM", shutdown);
+
+  return runtime;
+}
+
+async function main(): Promise<void> {
+  try {
+    await runCli(process.argv);
+  } catch (runtimeError: unknown) {
+    const message = runtimeError instanceof Error ? runtimeError.message : String(runtimeError);
+    console.error(`Error: ${message}`);
+    process.exit(1);
+  }
 }
 
 const isMain =

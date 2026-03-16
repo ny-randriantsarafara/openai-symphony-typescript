@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import websocket from "@fastify/websocket";
 import type {
   StateResponse,
   IssueDetailResponse,
@@ -18,6 +19,9 @@ export interface ServerDependencies {
   triggerRefresh: () => Promise<void>;
   getConfig: () => ConfigResponse;
   getRecentEvents: (offset: number, limit: number) => EventsResponse;
+  wsServer?: {
+    register: (app: ReturnType<typeof Fastify>) => void;
+  };
 }
 
 export interface CreateServerOptions {
@@ -31,6 +35,11 @@ export async function createServer(
 ): Promise<ReturnType<typeof Fastify>> {
   const { listen: shouldListen = true } = options;
   const app = Fastify({ logger: false });
+
+  if (deps.wsServer) {
+    await app.register(websocket);
+    deps.wsServer.register(app);
+  }
 
   app.setNotFoundHandler((_request, reply) => {
     const body: ApiError = {

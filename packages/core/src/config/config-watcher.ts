@@ -22,6 +22,10 @@ export class ConfigWatcher extends EventEmitter {
     const result = await this.reload();
     if (!result.ok) return result;
 
+    if (this.watcher) {
+      return { ok: true, value: undefined };
+    }
+
     this.watcher = watch(this.workflowPath, { ignoreInitial: true });
     this.watcher.on("change", () => {
       void this.reload();
